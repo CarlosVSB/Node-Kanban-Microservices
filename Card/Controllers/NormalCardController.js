@@ -74,16 +74,28 @@ module.exports = {
         if (response.statusCode == 404) {
           return res.status(404).json({ msg: "Usuário não encontrado" });
         } else {
-          // criar a nota
-          const card = new NormalCard({
-            title,
-            date: new Date(date),
-            description,
-            other: other ? other : "",
-            userId,
-          });
-          await card.save();
-          res.status(201).json({ msg: "card criado com sucesso" });
+          request.post(
+            `http://kanban-pc.eba-fr8ukxqm.us-east-2.elasticbeanstalk.com/card/date/check`,
+            { json: { date: date } },
+            async (err, response2, body) => {
+              if (response2.statusCode === 200) {
+                return res.status(422).json({
+                  msg: "Já existe outro compromisso nessa data e hora nos cards normais",
+                });
+              } else {
+                // criar a nota
+                const card = new NormalCard({
+                  title,
+                  date: new Date(date),
+                  description,
+                  other: other ? other : "",
+                  userId,
+                });
+                await card.save();
+                res.status(201).json({ msg: "card criado com sucesso" });
+              }
+            }
+          );
         }
       });
     } catch (error) {

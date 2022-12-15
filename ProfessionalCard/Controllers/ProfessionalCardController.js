@@ -44,14 +44,6 @@ module.exports = {
           "Content-Type": "application/json",
         },
       };
-      const options2 = {
-        method: "POST",
-        url: `http://kanban-sc.eba-fr8ukxqm.us-east-2.elasticbeanstalk.com/card/date/check`,
-        body: { date: date },
-        headers: {
-          "Content-Type": "application/json",
-        },
-      };
 
       //validação
       if (!title) {
