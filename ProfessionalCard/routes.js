@@ -13,6 +13,9 @@ router.get("/", (req, res) => {
 // criar card profissional
 router.post("/card/pro", ProfessionalCardController.createCard);
 
+// checar choque de horário
+router.post("/card/pro/date/check", ProfessionalCardController.checkConflict);
+
 // ver cards profissionais de um usuário
 router.get("/card/pro/:userId", ProfessionalCardController.getUserCards);
 

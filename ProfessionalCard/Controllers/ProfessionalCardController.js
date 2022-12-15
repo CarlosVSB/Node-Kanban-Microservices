@@ -36,11 +36,19 @@ module.exports = {
       const { title, date, activity, project, description, userId } = req.body;
       const authHeader = req.headers["authorization"];
       const token = authHeader && authHeader.split(" ")[1];
-      var options = {
+      const options = {
         method: "GET",
         url: `https://kanban-login.azurewebsites.net/user/${userId}`,
         headers: {
           Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      };
+      const options2 = {
+        method: "POST",
+        url: `http://kanban-sc.eba-fr8ukxqm.us-east-2.elasticbeanstalk.com/card/date/check`,
+        body: { date: date },
+        headers: {
           "Content-Type": "application/json",
         },
       };
@@ -52,7 +60,9 @@ module.exports = {
       if (!date) {
         return res.status(422).json({ msg: "A data é obrigatória" });
       }
-      const conflict = await ProfessionalCard.find({ date: new Date(date) });
+      const conflict = await ProfessionalCard.find({
+        date: new Date(date),
+      });
       // console.log(conflict.length);
       if (conflict.length) {
         return res
@@ -79,17 +89,30 @@ module.exports = {
         if (response.statusCode == 404) {
           return res.status(404).json({ msg: "Usuário não encontrado" });
         } else {
-          // criar a nota
-          const card = new ProfessionalCard({
-            title,
-            date: new Date(date),
-            activity,
-            project,
-            description,
-            userId,
-          });
-          await card.save();
-          res.status(201).json({ msg: "card criado com sucesso" });
+          // verificar se há choque de horário nos cards normais
+          request.post(
+            `http://kanban-sc.eba-fr8ukxqm.us-east-2.elasticbeanstalk.com/card/date/check`,
+            { json: { date: date } },
+            async (err, response2, body) => {
+              if (response2.statusCode === 200) {
+                return res.status(422).json({
+                  msg: "Já existe outro compromisso nessa data e hora nos cards normais",
+                });
+              } else {
+                // criar a nota
+                const card = new ProfessionalCard({
+                  title,
+                  date: new Date(date),
+                  activity,
+                  project,
+                  description,
+                  userId,
+                });
+                await card.save();
+                res.status(201).json({ msg: "card criado com sucesso" });
+              }
+            }
+          );
         }
       });
     } catch (error) {
@@ -122,6 +145,19 @@ module.exports = {
       await ProfessionalCard.findByIdAndUpdate(cardId, req.body);
 
       return res.sendStatus(204);
+    } catch (error) {
+      console.log(error);
+      return res.sendStatus(500);
+    }
+  },
+
+  async checkConflict(req, res) {
+    try {
+      const { date } = req.body;
+      const conflict = await ProfessionalCard.find({ date: new Date(date) });
+      conflict.length
+        ? res.status(200).json({ msg: "choque de horário" })
+        : res.status(404).json({ msg: "não há choque de horário" });
     } catch (error) {
       console.log(error);
       return res.sendStatus(500);
