@@ -122,6 +122,14 @@ module.exports = {
     }
   },
 
+  async checkConflict(req, res) {
+    const { date } = req.body;
+    const conflict = await NormalCard.find({ date: new Date(date) });
+    conflict.length
+      ? res.status(200).json({ msg: "choque de horário" })
+      : res.status(404).json({ msg: "não há choque de horário" });
+  },
+
   async updateDate(req, res) {
     try {
       const { cardId } = req.params;

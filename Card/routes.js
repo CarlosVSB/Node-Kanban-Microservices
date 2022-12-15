@@ -19,6 +19,9 @@ router.get("/card/:userId", NormalCardController.getUserCards);
 // mudar infos de um card comum
 router.patch("/card/:cardId", NormalCardController.changeInfo);
 
+// checar choque de horário
+router.post("card/date/check", NormalCardController.checkConflict);
+
 // muda a data de um card comum
 router.patch("/card/date/:cardId", NormalCardController.updateDate);
 
