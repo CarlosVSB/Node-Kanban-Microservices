@@ -1,0 +1,26 @@
+{
+    "AWSEBDockerrunVersion": "2",
+    "volumes": [],
+    "containerDefinitions": [
+      {
+        "name": "app",
+        "image": "199350483668.dkr.ecr.us-east-2.amazonaws.com/kanban-back2:latest",
+        "environment": [],
+        "essential": true,
+        "memory": 256,
+        "links": [],
+        "mountPoints": [
+          {
+            "sourceVolume": "awseb-logs-app",
+            "containerPath": "/app/log"
+          }
+        ],
+        "portMappings": [
+          {
+            "containerPort": 3001,
+            "hostPort": 80
+          }
+        ]
+      }
+    ]
+  }
